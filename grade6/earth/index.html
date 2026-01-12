@@ -65,12 +65,20 @@
 
     <!-- Earth 3D Model -->
     <model-viewer
-      src="earth.glb"
-      camera-controls
-      auto-rotate
-      rotation-per-second="15deg"
-      exposure="1">
-    </model-viewer>
+  src="earth.glb"
+  camera-controls
+  auto-rotate
+  rotation-per-second="15deg"
+  exposure="1"
+
+  ar
+  ar-placement="floor"
+  ar-scale="fixed"
+  ar-tracking="stable"
+
+  style="width:100%;height:100%;">
+</model-viewer>
+
 
     <!-- AR Buttons -->
     <div class="ar-buttons">
