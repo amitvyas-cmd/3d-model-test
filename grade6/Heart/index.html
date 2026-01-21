@@ -12,13 +12,12 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #fff;
     }
 
     .viewer-container {
       position: relative;
       width: 100vw;
-      height: 80vh;
+      height: 85vh;
     }
 
     model-viewer {
@@ -26,24 +25,19 @@
       height: 100%;
     }
 
-    /* Hide default AR button (cube) */
-    model-viewer::part(default-ar-button) {
-      display: none;
-    }
-
     .ar-btn {
       position: absolute;
-      bottom: 14px;
+      bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
       padding: 12px 20px;
       background: #000;
       color: #fff;
-      border-radius: 20px;
+      border-radius: 22px;
       font-size: 14px;
-      text-decoration: none;
+      border: none;
       cursor: pointer;
-      user-select: none;
+      z-index: 10;
     }
 
     .hint {
@@ -57,47 +51,44 @@
 
 <body>
 
-  <div class="viewer-container">
+<div class="viewer-container">
 
-    <!-- 3D + Android AR -->
-    <model-viewer
-      id="viewer"
-      src="model.glb"
-      ar
-      ar-modes="webxr scene-viewer"
-      camera-controls
-      auto-rotate>
-    </model-viewer>
+  <!-- 3D + Android AR -->
+  <model-viewer
+    id="viewer"
+    src="model.glb"
+    ar
+    ar-modes="webxr scene-viewer"
+    camera-controls
+    auto-rotate>
+  </model-viewer>
 
-    <!-- Unified AR button -->
-    <a id="arButton" class="ar-btn">
-      View in AR
-    </a>
+  <!-- Unified AR button -->
+  <button class="ar-btn" id="arButton">
+    View in AR
+  </button>
 
-  </div>
+</div>
 
-  <div class="hint">
-    Rotate with fingers • AR available on supported devices
-  </div>
+<div class="hint">
+  Rotate with fingers • For AR, tap “View in AR”
+</div>
 
-  <script>
-    const viewer = document.getElementById('viewer');
-    const arBtn = document.getElementById('arButton');
+<script>
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const arButton = document.getElementById('arButton');
+  const viewer = document.getElementById('viewer');
 
-    // Detect iOS
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
+  arButton.addEventListener('click', () => {
     if (isIOS) {
-      // iPhone → Apple Quick Look
-      arBtn.setAttribute('href', 'model.usdz');
-      arBtn.setAttribute('rel', 'ar');
+      // iOS → Apple Quick Look
+      window.location.href = 'model.usdz';
     } else {
       // Android → model-viewer AR
-      arBtn.addEventListener('click', () => {
-        viewer.activateAR();
-      });
+      viewer.activateAR();
     }
-  </script>
+  });
+</script>
 
 </body>
 </html>
