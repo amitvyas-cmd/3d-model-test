@@ -86,11 +86,20 @@
 </button>
 
 <script>
-  const mv = document.querySelector('#mv');
-  document.querySelector('#arBtn').addEventListener('click', () => {
-    mv.activateAR();
+  const mv = document.getElementById('mv');
+  const btn = document.getElementById('arBtn');
+
+  btn.addEventListener('click', () => {
+    // 🔑 REQUIRED FOR ANDROID
+    mv.pause();
+
+    // small delay ensures Scene Viewer accepts the intent
+    setTimeout(() => {
+      mv.activateAR();
+    }, 100);
   });
 </script>
+
 
 
 </div>
