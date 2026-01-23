@@ -54,14 +54,20 @@
 <div class="viewer-container">
 
   <!-- 3D + Android AR -->
-  <model-viewer
-    id="viewer"
-    src="model.glb"
-    ar
-    ar-modes="webxr scene-viewer"
-    camera-controls
-    auto-rotate>
-  </model-viewer>
+ <model-viewer
+  src="model.glb"
+  ar
+  ar-modes="scene-viewer quick-look"
+  ar-placement="floor"
+  camera-controls
+  autoplay
+  loop
+  animation-name="*"
+  environment-image="neutral"
+  exposure="1"
+  style="width:100vw; height:100vh;">
+</model-viewer>
+
 
   <!-- Unified AR button -->
   <button class="ar-btn" id="arButton">
