@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module"
     src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
   </script>
@@ -10,30 +10,18 @@
 
 <body style="margin:0;">
 
-  <!-- 3D / AR VIEW -->
-  <model-viewer
-    src="model.glb"
-    ar
-    ar-modes="scene-viewer quick-look"
-    camera-controls
-    autoplay
-    loop
-    animation-name="*"
-    environment-image="neutral"
-    exposure="1"
-    style="width:100%; height:calc(100vh - 70px);">
-  </model-viewer>
-
-  <!-- SPACE FOR AR BUTTON (THIS IS THE "SECOND CODE") -->
-  <div style="
-    height:70px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-family:system-ui, sans-serif;
-    font-size:14px;">
-    ↑ Tap “View in AR”
-  </div>
+<model-viewer
+  src="model.glb"
+  ar
+  ar-modes="scene-viewer quick-look"
+  camera-controls
+  autoplay
+  loop
+  animation-name="*"
+  environment-image="neutral"
+  exposure="1"
+  style="width:100vw;height:100vh;">
+</model-viewer>
 
 </body>
 </html>
