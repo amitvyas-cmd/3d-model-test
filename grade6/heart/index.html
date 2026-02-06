@@ -54,11 +54,11 @@
 <div class="viewer-container">
 
   <!-- 3D + Android AR -->
- <model-viewer
+<model-viewer
+  id="mv"
   src="model.glb"
   ar
-  ar-modes="scene-viewer quick-look"
-  ar-placement="floor"
+  ar-modes="quick-look"
   camera-controls
   autoplay
   loop
@@ -68,33 +68,40 @@
   style="width:100vw; height:100vh;">
 </model-viewer>
 
-
-  <!-- Unified AR button -->
-  <button class="ar-btn" id="arButton">
-    View in AR
-  </button>
-
-</div>
-
-<div class="hint">
-  Rotate with fingers • For AR, tap “View in AR”
-</div>
+<!-- Custom AR button -->
+<button id="ar-btn"
+  style="
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:14px 22px;
+    border-radius:24px;
+    background:black;
+    color:white;
+    font-size:16px;
+    z-index:999;">
+  View in AR
+</button>
 
 <script>
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const arButton = document.getElementById('arButton');
-  const viewer = document.getElementById('viewer');
+const isAndroid = /Android/i.test(navigator.userAgent);
 
-  arButton.addEventListener('click', () => {
-    if (isIOS) {
-      // iOS → Apple Quick Look
-      window.location.href = 'model.usdz';
-    } else {
-      // Android → model-viewer AR
-      viewer.activateAR();
-    }
-  });
+document.getElementById('ar-btn').onclick = () => {
+  if (isAndroid) {
+    // Explicit Scene Viewer intent (RELIABLE)
+    location.href =
+      'intent://arvr.google.com/scene-viewer/1.0' +
+      '?file=' + encodeURIComponent(location.origin + location.pathname.replace('index.html','model.glb')) +
+      '&mode=ar_preferred' +
+      '#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;end;';
+  } else {
+    // iOS Quick Look
+    document.getElementById('mv').activateAR();
+  }
+};
 </script>
+
 
 </body>
 </html>
