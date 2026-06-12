@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D AR Viewer</title>
 
-  <script type="module"
-    src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js">
-  </script>
+  <script type="module" src="https://unpkg.com"></script>
 
   <style>
     body {
@@ -48,26 +47,29 @@
     }
   </style>
 </head>
-
 <body>
 
 <div class="viewer-container">
-
-  <!-- 3D + Android AR -->
+  <!-- 
+    Added "min-camera-orbit" and "max-camera-orbit" to restrict wild zoom behavior.
+    Added "camera-target" to force the center pivot point to the middle of the object.
+  -->
   <model-viewer
     id="viewer"
     src="model.glb"
     ar
     ar-modes="webxr scene-viewer"
     camera-controls
-    auto-rotate>
+    auto-rotate
+    autoplay
+    camera-target="0m 0m 0m"
+    min-camera-orbit="auto auto auto"
+    max-camera-orbit="auto auto auto">
   </model-viewer>
 
-  <!-- Unified AR button -->
   <button class="ar-btn" id="arButton">
     View in AR
   </button>
-
 </div>
 
 <div class="hint">
@@ -79,12 +81,26 @@
   const arButton = document.getElementById('arButton');
   const viewer = document.getElementById('viewer');
 
+  // Fix 1: Auto-Scale Desktop View on Load
+  viewer.addEventListener('load', () => {
+    // Resets the framing camera so the entire bounding box fits perfectly in Chrome
+    viewer.zoom(0); 
+  });
+
   arButton.addEventListener('click', () => {
     if (isIOS) {
-      // iOS → Apple Quick Look
-      window.location.href = 'model.usdz';
+      const anchor = document.createElement('a');
+      anchor.setAttribute('rel', 'ar');
+      
+      // Fix 2: Auto-Scale Mobile AR View
+      // "canonicalWebPageURL" improves tracking, but we append parameters to control sizing
+      anchor.setAttribute('href', 'model.usdz#allowsContentScaling=1&checkoutTitle=My%20Model');
+      
+      const img = document.createElement('img');
+      anchor.appendChild(img);
+      
+      anchor.click();
     } else {
-      // Android → model-viewer AR
       viewer.activateAR();
     }
   });
