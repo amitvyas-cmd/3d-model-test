@@ -6,13 +6,12 @@
   <title>3D AR Viewer</title>
 
   <!-- Official, stable model-viewer engine -->
-  <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
+  <script type="module" src="https://unpkg.com"></script>
 
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
     }
 
     .viewer-container {
@@ -53,10 +52,7 @@
 
 <div class="viewer-container">
 
-  <!-- 
-    Added auto camera-orbit framing configurations.
-    Added native autoplay attributes.
-  -->
+  <!-- Core Component with Autoplay and Scale parameters -->
   <model-viewer 
     id="viewer" 
     src="model.glb" 
@@ -69,7 +65,7 @@
     camera-target="0m 0m 0m"> 
   </model-viewer>
 
-  <!-- Unified AR button -->
+  <!-- Single, unified operational button -->
   <button class="ar-btn" id="arButton"> 
     View in AR 
   </button>
@@ -85,37 +81,33 @@
   const arButton = document.getElementById('arButton');
   const viewer = document.getElementById('viewer');
 
-  // Fix 1 & 2: Automatic Sizing & Chrome Animation Activation
+  // Chrome Autoplay & Scale Frame Adjustments
   viewer.addEventListener('load', () => {
-    // Force browser to recalculate bounding boxes and fit the screen cleanly
     viewer.zoom(0);
 
-    // Grab whatever animation track exists natively in your glb file and force play it
     const availableAnims = viewer.availableAnimations;
     if (availableAnims && availableAnims.length > 0) {
-      viewer.animationName = availableAnims[0];
+      viewer.animationName = availableAnims;
       viewer.play();
     }
   });
 
-  // Fix 3: One-Click Direct AR Launch on iOS
-  arButton.addEventListener('click', () => {
+  // Fixed Native Execution Handler (Fixes Android Permissions Block)
+  arButton.addEventListener('click', (event) => {
+    // Prevent any browser action delays from breaking user-gesture tokenization
+    event.preventDefault(); 
+    
     if (isIOS) {
-      // Create a native link element tracking an absolute AR intent rule
+      // iOS Setup: Generates Quick Look Bridge on tap
       const anchor = document.createElement('a');
       anchor.setAttribute('rel', 'ar');
-      
-      // Points directly to the USDZ asset and disables screen confirmation wrappers
       anchor.setAttribute('href', 'model.usdz#allowsContentScaling=1');
       
-      // Safari requires a physical child image node inside the anchor to bypass security blocks
       const dummyImg = document.createElement('img');
       anchor.appendChild(dummyImg);
-      
-      // Trigger native device camera sequence instantly
       anchor.click();
     } else {
-      // Android / Desktop Fallback
+      // Android Setup: Immediate, synchronous invocation bypassing modern WebXR security locks
       viewer.activateAR();
     }
   });
