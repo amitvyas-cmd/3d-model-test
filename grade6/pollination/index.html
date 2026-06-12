@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>3D AR Viewer</title>
 
+  <!-- Load the official, stable model-viewer engine -->
   <script type="module" src="https://unpkg.com"></script>
 
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
     }
 
     .viewer-container {
@@ -22,25 +24,28 @@
     model-viewer {
       width: 100%;
       height: 100%;
+      --progress-bar-color: #000;
     }
 
-    /* Standard Button for Android / Desktop */
-    .ar-btn {
+    /* Style the native, built-in AR button safely */
+    #ar-button {
+      background-color: #000;
+      border-radius: 22px;
+      padding: 12px 20px;
+      color: #fff;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
       position: absolute;
       bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
-      padding: 12px 20px;
-      background: #000;
-      color: #fff;
-      border-radius: 22px;
-      font-size: 14px;
-      border: none;
-      cursor: pointer;
-      z-index: 10;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
+      z-index: 99;
+    }
+
+    /* Hide the button automatically if the device doesn't support AR */
+    model-viewer:not([ar-status="object-placement"]) #ar-button {
+      display: none;
     }
 
     .hint {
@@ -54,32 +59,32 @@
 <body>
 
 <div class="viewer-container">
-  
+
+  <!-- 
+    1. src / ios-src: Points natively to your files.
+    2. autoplay: Instructs desktop Chrome to instantly play the animation.
+    3. ar-modes: Uses "quick-look" first for iOS, bypassing the 2-step preview.
+    4. camera-orbit: Set to 'auto' so large models scale into view automatically.
+  -->
   <model-viewer
     id="viewer"
     src="model.glb"
+    ios-src="model.usdz#allowsContentScaling=1"
     ar
-    ar-modes="webxr scene-viewer"
+    ar-modes="quick-look webxr scene-viewer"
     camera-controls
     auto-rotate
     autoplay
-    camera-target="0m 0m 0m"
-    min-camera-orbit="auto auto auto"
-    max-camera-orbit="auto auto auto">
+    camera-orbit="auto auto auto"
+    interpolation-decay="200">
+    
+    <!-- This is the natively managed button slot. No unsafe JS clicks required. -->
+    <button slot="ar-button" id="ar-button">
+      View in AR
+    </button>
+
   </model-viewer>
 
-  <!-- 
-    FIX 1 (iOS Loading Fail): Hardcoded HTML anchor with rel="ar".
-    Safari requires this exact markup format on page initialization to execute Quick Look instantly.
-  -->
-  <a id="iosArLink" rel="ar" href="model.usdz#allowsContentScaling=1" style="display: none;">
-    <button class="ar-btn">View in AR</button>
-  </a>
-
-  <!-- Fallback Button for Android/WebXR devices -->
-  <button class="ar-btn" id="androidArButton" style="display: none;">
-    View in AR
-  </button>
 </div>
 
 <div class="hint">
@@ -87,34 +92,25 @@
 </div>
 
 <script>
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const iosArLink = document.getElementById('iosArLink');
-  const androidArButton = document.getElementById('androidArButton');
   const viewer = document.getElementById('viewer');
 
-  // Display the proper button depending on device OS architecture
-  if (isIOS) {
-    iosArLink.style.display = 'block';
-  } else {
-    androidArButton.style.display = 'block';
-    androidArButton.addEventListener('click', () => {
-      viewer.activateAR();
-    });
-  }
-
-  // FIX 2 (Chrome Animation Fail): Programmatic track extraction 
+  // Solid, fail-safe Chrome animation & auto-scale enforcement
   viewer.addEventListener('load', () => {
-    // 1. Auto-center the framing bounding boxes
-    viewer.zoom(0); 
+    // Force native auto-framing calculation for oversized models
+    viewer.zoom(0);
 
-    // 2. Fetch animations list and feed track 0 explicitly to Chrome's player engine
-    const animations = viewer.availableAnimations;
-    if (animations && animations.length > 0) {
-      viewer.animationName = animations[0];
+    // Safeguard Chrome animation track playback
+    const names = viewer.availableAnimations;
+    if (names && names.length > 0) {
+      viewer.animationName = names[0];
       viewer.play();
     }
   });
 </script>
+
+</body>
+</html>
+
 
 </body>
 </html>
