@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>3D AR Viewer</title>
 
-  <!-- Load the official, stable model-viewer engine -->
-  <script type="module" src="https://unpkg.com"></script>
+  <!-- Official, stable model-viewer engine -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
 
   <style>
     body {
@@ -24,28 +24,21 @@
     model-viewer {
       width: 100%;
       height: 100%;
-      --progress-bar-color: #000;
     }
 
-    /* Style the native, built-in AR button safely */
-    #ar-button {
-      background-color: #000;
-      border-radius: 22px;
-      padding: 12px 20px;
-      color: #fff;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
+    .ar-btn {
       position: absolute;
       bottom: 16px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 99;
-    }
-
-    /* Hide the button automatically if the device doesn't support AR */
-    model-viewer:not([ar-status="object-placement"]) #ar-button {
-      display: none;
+      padding: 12px 20px;
+      background: #000;
+      color: #fff;
+      border-radius: 22px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
     }
 
     .hint {
@@ -61,49 +54,69 @@
 <div class="viewer-container">
 
   <!-- 
-    1. src / ios-src: Points natively to your files.
-    2. autoplay: Instructs desktop Chrome to instantly play the animation.
-    3. ar-modes: Uses "quick-look" first for iOS, bypassing the 2-step preview.
-    4. camera-orbit: Set to 'auto' so large models scale into view automatically.
+    Added auto camera-orbit framing configurations.
+    Added native autoplay attributes.
   -->
-  <model-viewer
-    id="viewer"
-    src="model.glb"
-    ios-src="model.usdz#allowsContentScaling=1"
-    ar
-    ar-modes="quick-look webxr scene-viewer"
-    camera-controls
+  <model-viewer 
+    id="viewer" 
+    src="model.glb" 
+    ar 
+    ar-modes="webxr scene-viewer" 
+    camera-controls 
     auto-rotate
     autoplay
     camera-orbit="auto auto auto"
-    interpolation-decay="200">
-    
-    <!-- This is the natively managed button slot. No unsafe JS clicks required. -->
-    <button slot="ar-button" id="ar-button">
-      View in AR
-    </button>
-
+    camera-target="0m 0m 0m"> 
   </model-viewer>
+
+  <!-- Unified AR button -->
+  <button class="ar-btn" id="arButton"> 
+    View in AR 
+  </button>
 
 </div>
 
-<div class="hint">
+<div class="hint"> 
   Rotate with fingers • For AR, tap “View in AR”
 </div>
 
 <script>
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const arButton = document.getElementById('arButton');
   const viewer = document.getElementById('viewer');
 
-  // Solid, fail-safe Chrome animation & auto-scale enforcement
+  // Fix 1 & 2: Automatic Sizing & Chrome Animation Activation
   viewer.addEventListener('load', () => {
-    // Force native auto-framing calculation for oversized models
+    // Force browser to recalculate bounding boxes and fit the screen cleanly
     viewer.zoom(0);
 
-    // Safeguard Chrome animation track playback
-    const names = viewer.availableAnimations;
-    if (names && names.length > 0) {
-      viewer.animationName = names[0];
+    // Grab whatever animation track exists natively in your glb file and force play it
+    const availableAnims = viewer.availableAnimations;
+    if (availableAnims && availableAnims.length > 0) {
+      viewer.animationName = availableAnims[0];
       viewer.play();
+    }
+  });
+
+  // Fix 3: One-Click Direct AR Launch on iOS
+  arButton.addEventListener('click', () => {
+    if (isIOS) {
+      // Create a native link element tracking an absolute AR intent rule
+      const anchor = document.createElement('a');
+      anchor.setAttribute('rel', 'ar');
+      
+      // Points directly to the USDZ asset and disables screen confirmation wrappers
+      anchor.setAttribute('href', 'model.usdz#allowsContentScaling=1');
+      
+      // Safari requires a physical child image node inside the anchor to bypass security blocks
+      const dummyImg = document.createElement('img');
+      anchor.appendChild(dummyImg);
+      
+      // Trigger native device camera sequence instantly
+      anchor.click();
+    } else {
+      // Android / Desktop Fallback
+      viewer.activateAR();
     }
   });
 </script>
