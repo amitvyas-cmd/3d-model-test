@@ -24,6 +24,7 @@
       height: 100%;
     }
 
+    /* Standard Button for Android / Desktop */
     .ar-btn {
       position: absolute;
       bottom: 16px;
@@ -37,6 +38,9 @@
       border: none;
       cursor: pointer;
       z-index: 10;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
     }
 
     .hint {
@@ -50,10 +54,7 @@
 <body>
 
 <div class="viewer-container">
-  <!-- 
-    Added "min-camera-orbit" and "max-camera-orbit" to restrict wild zoom behavior.
-    Added "camera-target" to force the center pivot point to the middle of the object.
-  -->
+  
   <model-viewer
     id="viewer"
     src="model.glb"
@@ -67,7 +68,16 @@
     max-camera-orbit="auto auto auto">
   </model-viewer>
 
-  <button class="ar-btn" id="arButton">
+  <!-- 
+    FIX 1 (iOS Loading Fail): Hardcoded HTML anchor with rel="ar".
+    Safari requires this exact markup format on page initialization to execute Quick Look instantly.
+  -->
+  <a id="iosArLink" rel="ar" href="model.usdz#allowsContentScaling=1" style="display: none;">
+    <button class="ar-btn">View in AR</button>
+  </a>
+
+  <!-- Fallback Button for Android/WebXR devices -->
+  <button class="ar-btn" id="androidArButton" style="display: none;">
     View in AR
   </button>
 </div>
@@ -78,30 +88,30 @@
 
 <script>
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const arButton = document.getElementById('arButton');
+  const iosArLink = document.getElementById('iosArLink');
+  const androidArButton = document.getElementById('androidArButton');
   const viewer = document.getElementById('viewer');
 
-  // Fix 1: Auto-Scale Desktop View on Load
-  viewer.addEventListener('load', () => {
-    // Resets the framing camera so the entire bounding box fits perfectly in Chrome
-    viewer.zoom(0); 
-  });
-
-  arButton.addEventListener('click', () => {
-    if (isIOS) {
-      const anchor = document.createElement('a');
-      anchor.setAttribute('rel', 'ar');
-      
-      // Fix 2: Auto-Scale Mobile AR View
-      // "canonicalWebPageURL" improves tracking, but we append parameters to control sizing
-      anchor.setAttribute('href', 'model.usdz#allowsContentScaling=1&checkoutTitle=My%20Model');
-      
-      const img = document.createElement('img');
-      anchor.appendChild(img);
-      
-      anchor.click();
-    } else {
+  // Display the proper button depending on device OS architecture
+  if (isIOS) {
+    iosArLink.style.display = 'block';
+  } else {
+    androidArButton.style.display = 'block';
+    androidArButton.addEventListener('click', () => {
       viewer.activateAR();
+    });
+  }
+
+  // FIX 2 (Chrome Animation Fail): Programmatic track extraction 
+  viewer.addEventListener('load', () => {
+    // 1. Auto-center the framing bounding boxes
+    viewer.zoom(0); 
+
+    // 2. Fetch animations list and feed track 0 explicitly to Chrome's player engine
+    const animations = viewer.availableAnimations;
+    if (animations && animations.length > 0) {
+      viewer.animationName = animations[0];
+      viewer.play();
     }
   });
 </script>
