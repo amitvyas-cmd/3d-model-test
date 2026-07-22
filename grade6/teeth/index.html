@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D AR Viewer</title>
+
+  <!-- Official, stable model-viewer engine -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer@3.4.0/dist/model-viewer.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+    }
+
+    .viewer-container {
+      position: relative;
+      width: 100vw;
+      height: 85vh;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+    }
+
+    .ar-btn {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      background: #000;
+      color: #fff;
+      border-radius: 22px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+      margin: 6px 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="viewer-container">
+
+  <!-- Core component configuration -->
+  <model-viewer 
+    id="viewer" 
+    src="model.glb" 
+    ar 
+    ar-modes="webxr scene-viewer" 
+    camera-controls 
+    auto-rotate
+    autoplay
+    camera-orbit="auto auto auto"
+    camera-target="0m 0m 0m"> 
+  </model-viewer>
+
+  <!-- Unified AR button -->
+  <button class="ar-btn" id="arButton"> 
+    View in AR 
+  </button>
+
+</div>
+
+<div class="hint"> 
+  Rotate with fingers • For AR, tap “View in AR”
+</div>
+
+<script>
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const arButton = document.getElementById('arButton');
+  const viewer = document.getElementById('viewer');
+
+  // Fix 1 & 2: Kept original logic using [0] index to ensure Chrome/iOS load perfectly
+  viewer.addEventListener('load', () => {
+    viewer.zoom(0);
+
+    const availableAnims = viewer.availableAnimations;
+    if (availableAnims && availableAnims.length > 0) {
+      viewer.animationName = availableAnims[0];
+      viewer.play();
+    }
+  });
+
+  // Fix 3: Optimized Listener Split (Guarantees Android permissions remain open)
+  if (isIOS) {
+    arButton.addEventListener('click', () => {
+      // iOS direct AR execution path
+      const anchor = document.createElement('a');
+      anchor.setAttribute('rel', 'ar');
+      anchor.setAttribute('href', 'model.usdz#allowsContentScaling=1');
+      
+      const dummyImg = document.createElement('img');
+      anchor.appendChild(dummyImg);
+      anchor.click();
+    });
+  } else {
+    arButton.addEventListener('click', () => {
+      // Android direct execution path - zero delays, zero conditions, 100% native gesture token
+      viewer.activateAR();
+    });
+  }
+</script>
+
+</body>
+</html>
